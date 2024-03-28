@@ -1,6 +1,6 @@
 import pandas as pd
 
-file = "taxonomic_abundances.csv"
+file = "zeller_abundances.csv"
 
 # Load the dataset and rename the first unnamed column
 df = pd.read_csv(file, header=0)
