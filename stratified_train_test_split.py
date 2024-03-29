@@ -16,7 +16,7 @@ X = data[:,1:-1]
 y = data[:,-1]
 
 # split into train test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.60, random_state=13, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
 
 print("X_train, X_test size: ", X_train.shape, X_test.shape)
 print("y_train, y_test size: ", y_train.shape, y_test.shape)
