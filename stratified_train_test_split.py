@@ -11,6 +11,7 @@ filename='rynazal_filtered_abundance.csv'
 df = pd.read_csv(filename, header=0)
 
 data = df.values
+# exclude "Sample ID" and response variable ("CRC") columns from features
 X = data[:,1:-1]
 y = data[:,-1]
 
