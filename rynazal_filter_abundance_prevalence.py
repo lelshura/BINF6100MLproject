@@ -1,24 +1,20 @@
+# code adapted from: https://github.com/ryzary/shapmat_paper/blob/v1.0.0/shapmat/abundance_filter.py
 import pandas as pd
-data = pd.read_csv("bacteria_relative_abundance_concat.csv", header=0)
-
-print(data.shape)
 
 def set_abundance_to_zero(data, abundance_threshold=1e-15):
     """
     Set abundance that are < threshold to 0
+    skipping the sample ID, study_name, and CRC columns
     """
-    # Convert all columns to numeric, coercing errors
-    for column in data.columns:
-        data[column] = pd.to_numeric(data[column], errors='coerce')
+    # identify columns containing relative abundance values
+    cols_to_convert = data.columns[1:-2]
 
-    low_abundance = []
-    for species in data.columns:
-        for i, v in enumerate(data[species]):
-            if pd.notnull(v) and v < abundance_threshold:
-                low_abundance.append([species, i, v])
+    # convert relative abundance values to numeric values
+    data[cols_to_convert] = data[cols_to_convert].apply(pd.to_numeric)
 
     ab_filtered_1 = data.copy()
-    ab_filtered_1[data < abundance_threshold] = 0.0
+
+    ab_filtered_1.loc[:, cols_to_convert][data[cols_to_convert] < abundance_threshold] = 0.0
     return ab_filtered_1
 
 
@@ -30,10 +26,12 @@ def ab_filter(data, abundance_threshold=1e-15, prevalence_threshold=0.9):
         DataFrame
     """
     ab_filtered_1 = set_abundance_to_zero(data, abundance_threshold)
-    species_list = data.columns
+
+    # identify columns containing relative abundance values
+    cols_to_filter = data.columns[1:-2]
 
     selected_species = []
-    for species in species_list:
+    for species in cols_to_filter:
         species_ab = list(ab_filtered_1[species])
         n_zero = species_ab.count(0)
         percent_zeros = n_zero / len(species_ab)
@@ -41,12 +39,17 @@ def ab_filter(data, abundance_threshold=1e-15, prevalence_threshold=0.9):
         if percent_zeros < prevalence_threshold:
             selected_species.append(species)
 
-    filtered_data = ab_filtered_1[selected_species]
+    # bring the study name and CRC column to the beginning of the dataframe
+    selected_columns = [data.columns[0]] + data.columns[-2:].tolist() + selected_species
+    filtered_data = ab_filtered_1[selected_columns]
 
     return filtered_data
 
-filtered_data = ab_filter(data)
+# read in file containing abundance values
+df = pd.read_csv("bacteria_relative_abundance_concat.csv", header=0)
 
-print(filtered_data.shape)
+# apply filter functions to the dataframe
+filtered_df = ab_filter(df)
 
-filtered_data.to_csv('rynazal_filtered_abundance.csv', index=False)
+# write dataframe to a csv
+filtered_df.to_csv("rynazal_filtered_abundance.csv")
