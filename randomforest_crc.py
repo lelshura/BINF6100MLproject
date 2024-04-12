@@ -38,7 +38,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, rando
 model = RandomForestClassifier()
 
 # Train and evaluate the model with cross validation
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)
 n_scores = cross_val_score(model, X_train, y_train, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
 
 # Report performance based on mean and standard deviation of accuracy scores from cross validation
