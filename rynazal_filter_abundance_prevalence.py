@@ -61,7 +61,7 @@ filtered_df = ab_filter(df)
 filtered_df.to_csv("rynazal_filtered_abundance.csv", index = False)
 
 print("Original dataframe size:", df.shape[0], "samples,", df.shape[1], "taxa.")
-print("Original dataframe size:", filtered_df.shape[0],"samples,", filtered_df.shape[1], "taxa.")
+print("Filtered dataframe size:", filtered_df.shape[0],"samples,", filtered_df.shape[1], "taxa.")
 
 num_zeros = (filtered_df['CRC'] == 0).sum()
 
