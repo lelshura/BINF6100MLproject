@@ -46,7 +46,7 @@ def ab_filter(data, abundance_threshold=1e-15, prevalence_threshold=0.9):
     return filtered_data
 
 # read in file containing abundance values
-df = pd.read_csv("bacteria_relative_abundance_concat.csv", header=0)
+df = pd.read_csv("rynazal_data.csv", header=0)
 
 # remove study name column
 df.drop(df.columns[-2], axis=1, inplace=True)
