@@ -13,7 +13,7 @@ df = pd.read_csv(filename, header=0)
 data = df.values
 # exclude "Sample ID" and response variable ("CRC") columns from features
 X = data[:,1:-1]
-y = data[:,-1]
+y = data[:,-1].astype(int)
 
 # split into train test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
