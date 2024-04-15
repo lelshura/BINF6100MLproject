@@ -1,22 +1,37 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, GridSearchCV, learning_curve
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
+import matplotlib.pyplot as plt
 
-# Define the location of the dataset
+# Load the original dataset
 filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_abundance_metadata_tranformation.csv'
-
-# Load the dataset; header is the first row
 df = pd.read_csv(filename, header=0)
 
-# Exclude 'Sample ID' and 'CRC' from the features, 'CRC' is the target variable
-X = df.drop(['Sample ID', 'CRC'], axis=1).values
+# Specify categorical and numeric features
+categorical_features = ['gender', 'country']
+numeric_features = df.drop(['Sample ID', 'CRC', 'gender', 'country'], axis=1).columns.tolist()
+
+# Create preprocessors for numeric and categorical data
+numeric_transformer = StandardScaler()
+categorical_transformer = OneHotEncoder(drop='first')
+
+# Create a column transformer to apply the transformations
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, numeric_features),
+        ('cat', categorical_transformer, categorical_features)
+    ])
+
+# Apply transformations
+X_processed = preprocessor.fit_transform(df.drop(['Sample ID', 'CRC'], axis=1))
 y = df['CRC'].values
 
 # Split into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X_processed, y, train_size=0.80, random_state=25, stratify=y)
 
 # Define the AdaBoost model with default base estimator
 model = AdaBoostClassifier(algorithm='SAMME', random_state=25)
