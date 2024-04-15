@@ -6,7 +6,7 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
 
 # Define the location of the dataset
-filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_abundance.csv'
+filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_abundance_metadata.csv'
 
 # Load the dataset; header is the first row
 df = pd.read_csv(filename, header=0)
