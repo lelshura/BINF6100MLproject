@@ -34,12 +34,33 @@ model.fit(X_train, y_train)
 
 # Evaluate the model
 y_pred = model.predict(X_test)
+y_probs = model.predict_proba(X_test)[:, 1]  # Get probabilities for the positive class
 accuracy = accuracy_score(y_test, y_pred)
-print('Accuracy: %.2f' % (accuracy*100))
-print('Confusion Matrix:\n', confusion_matrix(y_test, y_pred))
+conf_mat = confusion_matrix(y_test, y_pred)
+roc_auc = roc_auc_score(y_test, y_probs)
+mcc = matthews_corrcoef(y_test, y_pred)
+
+print('Accuracy: %.2f' % (accuracy * 100))
+print('Confusion Matrix:\n', conf_mat)
+print('ROC AUC Score: %.3f' % roc_auc)
+print('Matthews Correlation Coefficient: %.3f' % mcc)
 print('Classification Report:\n', classification_report(y_test, y_pred))
 
+# Plot ROC curve
+fpr, tpr, thresholds = roc_curve(y_test, y_probs)
+plt.figure()
+plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.show()
+
 # Plot the loss curve
+plt.figure()
 plt.plot(model.loss_curve_)
 plt.title('Model Loss Curve')
 plt.xlabel('Iterations')

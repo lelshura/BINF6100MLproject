@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, GridSearchCV, learning_curve
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score, matthews_corrcoef, \
+    roc_curve
 
 # Define the location of the dataset
-filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_abundance_metadata_tranformation.csv'
+filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_abundance.csv'
 
 # Load the dataset; header is the first row
 df = pd.read_csv(filename, header=0)
@@ -45,15 +46,28 @@ best_model = grid_search.best_estimator_
 # Evaluate the model on the test set
 y_pred = best_model.predict(X_test)
 y_pred_proba = best_model.predict_proba(X_test)[:, 1]  # for ROC AUC
+mcc = matthews_corrcoef(y_test, y_pred)
 accuracy = accuracy_score(y_test, y_pred)
 conf_mat = confusion_matrix(y_test, y_pred)
 roc_auc = roc_auc_score(y_test, y_pred_proba)
 
 # Print the evaluation results
 print("Test Set Accuracy: %.3f" % accuracy)
+print("Matthews Correlation Coefficient:", mcc)
 print("Confusion Matrix:\n", conf_mat)
 print("ROC AUC Score: %.3f" % roc_auc)
 print("Classification Report:\n", classification_report(y_test, y_pred))
+
+# Plot ROC curve
+fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, label='AdaBoost (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend(loc="lower right")
+plt.show()
 
 # Obtain the learning curve data
 train_sizes, train_scores, test_scores, fit_times, score_times = learning_curve(
