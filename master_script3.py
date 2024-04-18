@@ -241,6 +241,23 @@ def main(args):
     plot_roc_curve(y_test, rf_probabilities, 'Random Forest')
     plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='rf_learning_curve.png')
 
+    # Plot Feature Importance
+    rf_importance = rf_best_model.feature_importances_
+    rf_feature_importance = pd.Series(rf_importance, index=df.columns[1:-1])
+    rf_sorted_features = rf_feature_importance.sort_values(ascending=False)
+    rf_top_ten_features = rf_sorted_features[:10]
+    
+    # Sort the features in ascending order for display
+    rf_sorted_features = rf_top_ten_features.sort_values(ascending=True)
+    rf_sorted_features.plot(kind='barh', color='skyblue')
+    
+    plt.title('Top 10 Feature Importance Using Mean Decrease Gini')
+    plt.ylabel('Features')
+    plt.xlabel('Mean Decrease Gini')
+    plt.tight_layout()
+    plt.savefig('feature_importance_ab.png', bbox_inches='tight')
+    plt.close()
+
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
 
     # Define the AdaBoost model with default base estimator
@@ -265,9 +282,11 @@ def main(args):
 
     # Feature Importance
     feature_importances = adab_best_model.feature_importances_
+  
     # Create a pandas series with feature importances and labels, then sort it
     importances = pd.Series(feature_importances, index=df.columns[1:-1])
     sorted_features = importances.sort_values(ascending=False)
+  
     # Select the top 10 features
     top_importances = sorted_features[:10]
 
@@ -286,7 +305,7 @@ def main(args):
     plt.tight_layout()
 
     plt.show()
-    #-------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
+    
     # -------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
     # Standardize the features
     scaler = StandardScaler()
