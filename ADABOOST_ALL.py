@@ -6,6 +6,16 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score, matthews_corrcoef, \
     roc_curve
 
+# Update matplotlib settings for plotting
+plt.rcParams.update({
+    'font.size': 12,      # global font size
+    'font.family': 'sans-serif',
+    'axes.labelsize': 12,  # font size of the axes labels
+    'axes.titlesize': 16,  # font size of the axes title
+    'xtick.labelsize': 12,  # font size of the tick labels
+    'ytick.labelsize': 12   # font size of the tick labels
+})
+
 # Define the location of the dataset
 filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_abundance.csv'
 
@@ -29,7 +39,7 @@ grid = {
 }
 
 # Define the evaluation procedure
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)
 
 # Define the grid search procedure
 grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
@@ -97,7 +107,8 @@ fig, axes = plt.subplots(1, 3, figsize=(20, 5))
 axes[0].set_title("Learning Curve (AdaBoost)")
 axes[0].set_xlabel("Training examples")
 axes[0].set_ylabel("Score")
-axes[0].grid()
+axes[0].set_ylim(0.5, 1.01)  # Set the limits for the Y-axis
+axes[0].grid(True)
 axes[0].fill_between(train_sizes, train_scores_mean - train_scores_std,
                      train_scores_mean + train_scores_std, alpha=0.1, color="r")
 axes[0].fill_between(train_sizes, test_scores_mean - test_scores_std,
@@ -107,16 +118,17 @@ axes[0].plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-valida
 axes[0].legend(loc="best")
 
 # Scalability plot
-axes[1].grid()
+axes[1].grid(True)
 axes[1].plot(train_sizes, fit_times_mean, 'o-')
 axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
                      fit_times_mean + fit_times_std, alpha=0.1)
 axes[1].set_xlabel("Training examples")
 axes[1].set_ylabel("fit_times")
 axes[1].set_title("Scalability of the model")
+axes[1].set_ylim(0)  # Start y-axis at 0 for the scalability plot
 
 # Performance plot
-axes[2].grid()
+axes[2].grid(True)
 axes[2].plot(fit_times_mean, test_scores_mean, 'o-')
 axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
                      test_scores_mean + test_scores_std, alpha=0.1)
