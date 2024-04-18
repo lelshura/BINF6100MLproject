@@ -19,6 +19,10 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.metrics import (confusion_matrix, f1_score, matthews_corrcoef,
                              roc_auc_score, accuracy_score, precision_score,
                              recall_score, roc_curve, auc, classification_report)
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+
 # Set global Matplotlib style parameters
 plt.rcParams.update({'font.size': 12})
 plt.rc('font', size=12)
@@ -33,7 +37,7 @@ def load_data(filename):
     """ Load dataset from file """
     df = pd.read_csv(filename, header=0)
     data = df.values
-    X = data[:, 1:-1]
+    X = data[:, 1:-1] # Sample ID and CRC removed
     y = data[:, -1].astype(int)
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
 
@@ -164,7 +168,7 @@ def main(args):
     # Extract filename from args
     filename = args.filename
     # Load data and set cross-validation
-    X_train, X_test, y_train, y_test = load_data(filename)
+    X_train, X_test, y_train, y_test, df = load_data(filename)
     cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
 
     #-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
@@ -240,7 +244,7 @@ def main(args):
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
 
     # Define the AdaBoost model with default base estimator
-    adab_model = AdaBoostClassifier(algorithm='SAMME', random_state=25)
+    adab_model = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), algorithm='SAMME', random_state=25)
 
     # Define the parameters to search
     adab_param = {
@@ -248,21 +252,60 @@ def main(args):
         'learning_rate': [0.0001, 0.001, 0.01, 0.1, 1.0]
     }
 
-    # Create a RandomizedSearchCV object
-    adab_search = RandomizedSearchCV(adab_model, adab_param, n_jobs=-1, n_iter=20, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
+    # Create a GridSearch object
+    adab_grid = GridSearchCV(estimator=adab_model, param_grid=adab_param, n_jobs=-1, cv=cv, scoring='roc_auc')
 
     # Train and evaluate model
-    adab_predictions, adab_probabilities, adab_best_model = train_and_evaluate(adab_search, X_train, y_train, X_test)
+    adab_predictions, adab_probabilities, adab_best_model = train_and_evaluate(adab_grid, X_train, y_train, X_test)
 
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost')
     plot_roc_curve(y_test, adab_probabilities, 'AdaBoost')
     plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='adaboost_learning_curve.png')
 
+    # Feature Importance
+    feature_importances = adab_best_model.feature_importances_
+    # Create a pandas series with feature importances and labels, then sort it
+    importances = pd.Series(feature_importances, index=df.columns[1:-1])
+    sorted_features = importances.sort_values(ascending=False)
+    # Select the top 10 features
+    top_importances = sorted_features[:10]
+
+    # Create the plot with the specified aesthetics
+    plt.figure(figsize=(10, 6))
+    top_importances.plot(kind='barh', color='skyblue')
+
+    # Invert y-axis to have the highest importance at the top
+    plt.gca().invert_yaxis()
+
+    plt.title('Top 10 Feature Importances in AdaBoost Model')
+    plt.xlabel('Relative Importance')
+    plt.ylabel('Features')
+
+    # Tight layout to improve the spacing between subplots
+    plt.tight_layout()
+
+    plt.show()
     #-------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
+    # Standardize the features
+    scaler = StandardScaler()
+    x_train_mlp = scaler.fit_transform(X_train)
+    x_test_mlp = scaler.transform(X_test)
 
+    # Define the model
+    mlp_model = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
+                          random_state=25, max_iter=1000, alpha=0.0001,
+                          solver='adam', verbose=10, n_iter_no_change=10,
+                          early_stopping=True, validation_fraction=0.1)
 
+    # Train and evaluate model
+    mlp_predictions, mlp_probabilities, mlp_best_model = train_and_evaluate(x_train_mlp, y_train, x_test_mlp)
 
+    # Calculate metrics and plot
+    calculate_and_print_metrics(y_test, mlp_predictions, mlp_probabilities, 'MLP')
+    plot_roc_curve(y_test, mlp_probabilities, 'MLP')
+    plot_learning_curve(mlp_best_model, x_train_mlp, y_train, title="Learning Curve for MLP",
+                        filename='mlp_learning_curve.png')
 
 #----------------------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
