@@ -287,6 +287,7 @@ def main(args):
 
     plt.show()
     #-------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
+    # -------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
     # Standardize the features
     scaler = StandardScaler()
     x_train_mlp = scaler.fit_transform(X_train)
@@ -294,18 +295,30 @@ def main(args):
 
     # Define the model
     mlp_model = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
-                          random_state=25, max_iter=1000, alpha=0.0001,
-                          solver='adam', verbose=10, n_iter_no_change=10,
-                          early_stopping=True, validation_fraction=0.1)
+                              random_state=25, max_iter=1000, alpha=0.0001,
+                              solver='adam', verbose=10, n_iter_no_change=10,
+                              early_stopping=True, validation_fraction=0.1)
+
+    # Here you should define the parameter grid for the MLP model
+    mlp_param_grid = {
+        'hidden_layer_sizes': [(128, 64), (64, 32), (128,)],
+        'alpha': [0.0001, 0.001, 0.01],
+    }
+
+    # Create a GridSearchCV or RandomizedSearchCV object
+    mlp_search = GridSearchCV(mlp_model, mlp_param_grid, cv=cv, scoring='roc_auc', n_jobs=-1)
 
     # Train and evaluate model
-    mlp_predictions, mlp_probabilities, mlp_best_model = train_and_evaluate(x_train_mlp, y_train, x_test_mlp)
+    mlp_predictions, mlp_probabilities, mlp_best_model = train_and_evaluate(mlp_search, x_train_mlp, y_train,
+                                                                            x_test_mlp)
 
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, mlp_predictions, mlp_probabilities, 'MLP')
     plot_roc_curve(y_test, mlp_probabilities, 'MLP')
     plot_learning_curve(mlp_best_model, x_train_mlp, y_train, title="Learning Curve for MLP",
                         filename='mlp_learning_curve.png')
+
+    # ----------------------------------------------------------------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
