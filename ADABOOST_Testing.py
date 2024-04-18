@@ -141,7 +141,6 @@ plt.show()
 
 # Feature Importance
 feature_importances = best_model.feature_importances_
-
 # Create a pandas series with feature importances and labels, then sort it
 importances = pd.Series(feature_importances, index=df.columns[1:-1])
 sorted_features = importances.sort_values(ascending=False)
