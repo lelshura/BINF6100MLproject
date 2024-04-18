@@ -165,145 +165,154 @@ def plot_roc_curve(y_test, y_probs, model_name):
 #                                         Main Program
 #----------------------------------------------------------------------------------------------------------------------------------------
 
-filename = "rynazal_abundance_metadata.csv"
+filename = "rynazal_filtered_abundance.csv"
 
 X_train, X_test, y_train, y_test, df = load_data(filename)
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+cv = RepeatedStratifiedKFold(n_splits=2, n_repeats=1, random_state=1)
 
-    #-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
-    # Define the model
-    svm_model = svm.SVC(probability = True)
+#-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
+# Define the model
+svm_model = svm.SVC(probability = True)
 
-    # Define the parameters to search
-    svm_param = {
-        'C': np.logspace(-4, 4, 20),  # Log-uniform distribution
-        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-        'gamma': np.logspace(-4, 4, 20),  # Applies to non-linear kernels
-        'degree': [2, 3, 4, 5]  # Applies to 'poly' kernel
-    }
+# Define the parameters to search
+svm_param = {
+    'C': np.logspace(-4, 4, 20),  # Log-uniform distribution
+    'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    'gamma': np.logspace(-4, 4, 20),  # Applies to non-linear kernels
+    'degree': [2, 3, 4, 5]  # Applies to 'poly' kernel
+}
 
-    # Create a RandomizedSearchCV object
-    svm_search = RandomizedSearchCV(svm_model, svm_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
+# Create a RandomizedSearchCV object
+svm_search = RandomizedSearchCV(svm_model, svm_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
 
-    # Train and evaluate model
-    svm_predictions, svm_probabilities, svm_best_model = train_and_evaluate(svm_search, X_train, y_train, X_test)
+# Train and evaluate model
+svm_predictions, svm_probabilities, svm_best_model = train_and_evaluate(svm_search, X_train, y_train, X_test)
 
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM')
-    plot_roc_curve(y_test, svm_probabilities, 'SVM')
-    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='svm_learning_curve.png')
+# Calculate metrics and plot
+calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM')
+plot_roc_curve(y_test, svm_probabilities, 'SVM')
+plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='svm_learning_curve.png')
 
-    #-------------------------------------|Logistic Regression Classifier|---------------------------------------------------------------
-    # Define model
-    logreg_model = LogisticRegression(max_iter=100000)
+#-------------------------------------|Logistic Regression Classifier|---------------------------------------------------------------
+# Define model
+logreg_model = LogisticRegression(max_iter=100000)
 
-    # Define the parameters to search
-    logreg_param = [
-        {'C': np.logspace(-4, 4, 20), 'penalty': ['l1', 'l2'], 'solver': ['liblinear']},
-        {'C': np.logspace(-4, 4, 20), 'penalty': ['l2'], 'solver': ['lbfgs', 'sag', 'saga']},
-        {'C': np.logspace(-4, 4, 20), 'penalty': ['elasticnet'], 'solver': ['saga'], 'l1_ratio': np.linspace(0, 1, 10)},
-        {'solver': ['lbfgs', 'sag', 'saga'], 'penalty': [None]}
-    ]
+# Define the parameters to search
+logreg_param = [
+    {'C': np.logspace(-4, 4, 20), 'penalty': ['l1', 'l2'], 'solver': ['liblinear']},
+    {'C': np.logspace(-4, 4, 20), 'penalty': ['l2'], 'solver': ['lbfgs', 'sag', 'saga']},
+    {'C': np.logspace(-4, 4, 20), 'penalty': ['elasticnet'], 'solver': ['saga'], 'l1_ratio': np.linspace(0, 1, 10)},
+    {'solver': ['lbfgs', 'sag', 'saga'], 'penalty': [None]}
+]
 
-    # Create a RandomizedSearchCV object
-    logreg_search = RandomizedSearchCV(logreg_model, logreg_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
+# Create a RandomizedSearchCV object
+logreg_search = RandomizedSearchCV(logreg_model, logreg_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
 
-    # Train and evaluate model
-    logreg_predictions, logreg_probabilities, logreg_best_model = train_and_evaluate(logreg_search, X_train, y_train, X_test)
+# Train and evaluate model
+logreg_predictions, logreg_probabilities, logreg_best_model = train_and_evaluate(logreg_search, X_train, y_train, X_test)
 
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, logreg_predictions, logreg_probabilities, 'Logistic Regression')
-    plot_roc_curve(y_test, logreg_probabilities, 'Logistic Regression')
-    plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='logreg_learning_curve.png')
+# Calculate metrics and plot
+calculate_and_print_metrics(y_test, logreg_predictions, logreg_probabilities, 'Logistic Regression')
+plot_roc_curve(y_test, logreg_probabilities, 'Logistic Regression')
+plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='logreg_learning_curve.png')
 
-    #-------------------------------------|Random Forest Classifier|---------------------------------------------------------------------
-    # Define the model
-    rf_model = RandomForestClassifier(random_state=25)
+#-------------------------------------|Random Forest Classifier|---------------------------------------------------------------------
+# Define the model
+rf_model = RandomForestClassifier(random_state=25)
 
-    # Define the parameters to search
-    rf_param = {'n_estimators': [int(x) for x in np.linspace(start=100, stop=600, num=10)],
-                   'max_features': ['sqrt', 'log2', 0.5, None],
-                   'max_depth': [int(x) for x in np.linspace(10, 60, num=11)],
-                   'min_samples_split': [2, 4, 6, 8, 10],
-                   'min_samples_leaf': [1, 2, 3, 4, 5],
-                   'bootstrap': [True, False]}
+# Define the parameters to search
+rf_param = {'n_estimators': [int(x) for x in np.linspace(start=100, stop=600, num=10)],
+               'max_features': ['sqrt', 'log2', 0.5, None],
+               'max_depth': [int(x) for x in np.linspace(10, 60, num=11)],
+               'min_samples_split': [2, 4, 6, 8, 10],
+               'min_samples_leaf': [1, 2, 3, 4, 5],
+               'bootstrap': [True, False]}
 
 
-    # Create a RandomizedSearchCV object
-    rf_search = RandomizedSearchCV(rf_model, rf_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
+# Create a RandomizedSearchCV object
+rf_search = RandomizedSearchCV(rf_model, rf_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
 
-    # Train and evaluate model
-    rf_predictions, rf_probabilities, rf_best_model = train_and_evaluate(rf_search, X_train, y_train, X_test)
+# Train and evaluate model
+rf_predictions, rf_probabilities, rf_best_model = train_and_evaluate(rf_search, X_train, y_train, X_test)
 
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest')
-    plot_roc_curve(y_test, rf_probabilities, 'Random Forest')
-    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='rf_learning_curve.png')
+# Calculate metrics and plot
+calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest')
+plot_roc_curve(y_test, rf_probabilities, 'Random Forest')
+plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='rf_learning_curve.png')
 
-    #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
+#-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
 
-    # Define the AdaBoost model with default base estimator
-    adab_model = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), algorithm='SAMME', random_state=25)
+# Define the AdaBoost model with default base estimator
+adab_model = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), algorithm='SAMME', random_state=25)
 
-    # Define the parameters to search
-    adab_param = {
-        'n_estimators': [10, 50, 100, 500],
-        'learning_rate': [0.0001, 0.001, 0.01, 0.1, 1.0]
-    }
+# Define the parameters to search
+adab_param = {
+    'n_estimators': [10, 50, 100, 500],
+    'learning_rate': [0.0001, 0.001, 0.01, 0.1, 1.0]
+}
 
-    # Create a GridSearch object
-    adab_grid = GridSearchCV(estimator=adab_model, param_grid=adab_param, n_jobs=-1, cv=cv, scoring='roc_auc')
+# Create a GridSearch object
+adab_grid = GridSearchCV(estimator=adab_model, param_grid=adab_param, n_jobs=-1, cv=cv, scoring='roc_auc')
 
-    # Train and evaluate model
-    adab_predictions, adab_probabilities, adab_best_model = train_and_evaluate(adab_grid, X_train, y_train, X_test)
+# Train and evaluate model
+adab_predictions, adab_probabilities, adab_best_model = train_and_evaluate(adab_grid, X_train, y_train, X_test)
 
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost')
-    plot_roc_curve(y_test, adab_probabilities, 'AdaBoost')
-    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='adaboost_learning_curve.png')
+# Calculate metrics and plot
+calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost')
+plot_roc_curve(y_test, adab_probabilities, 'AdaBoost')
+plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='adaboost_learning_curve.png')
 
-    # Feature Importance
-    feature_importances = adab_best_model.feature_importances_
-    # Create a pandas series with feature importances and labels, then sort it
-    importances = pd.Series(feature_importances, index=df.columns[1:-1])
-    sorted_features = importances.sort_values(ascending=False)
-    # Select the top 10 features
-    top_importances = sorted_features[:10]
+# Feature Importance
+feature_importances = adab_best_model.feature_importances_
+# Create a pandas series with feature importances and labels, then sort it
+importances = pd.Series(feature_importances, index=df.columns[1:-1])
+sorted_features = importances.sort_values(ascending=False)
+# Select the top 10 features
+top_importances = sorted_features[:10]
 
-    # Create the plot with the specified aesthetics
-    plt.figure(figsize=(10, 6))
-    top_importances.plot(kind='barh', color='skyblue')
+# Create the plot with the specified aesthetics
+plt.figure(figsize=(10, 6))
+top_importances.plot(kind='barh', color='skyblue')
 
-    # Invert y-axis to have the highest importance at the top
-    plt.gca().invert_yaxis()
+# Invert y-axis to have the highest importance at the top
+plt.gca().invert_yaxis()
 
-    plt.title('Top 10 Feature Importances in AdaBoost Model')
-    plt.xlabel('Relative Importance')
-    plt.ylabel('Features')
+plt.title('Top 10 Feature Importances in AdaBoost Model')
+plt.xlabel('Relative Importance')
+plt.ylabel('Features')
 
-    # Tight layout to improve the spacing between subplots
-    plt.tight_layout()
+# Tight layout to improve the spacing between subplots
+plt.tight_layout()
 
-    plt.show()
-    #-------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
-    # Standardize the features
-    scaler = StandardScaler()
-    x_train_mlp = scaler.fit_transform(X_train)
-    x_test_mlp = scaler.transform(X_test)
+plt.show()
+#-------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
+# Standardize the features
+scaler = StandardScaler()
+x_train_mlp = scaler.fit_transform(X_train)
+x_test_mlp = scaler.transform(X_test)
 
-    # Define the model
-    mlp_model = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
-                          random_state=25, max_iter=1000, alpha=0.0001,
-                          solver='adam', verbose=10, n_iter_no_change=10,
-                          early_stopping=True, validation_fraction=0.1)
+# Define the model
+mlp_model = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
+                      random_state=25, max_iter=1000, alpha=0.0001,
+                      solver='adam', verbose=10, n_iter_no_change=10,
+                      early_stopping=True, validation_fraction=0.1)
 
-    # Train and evaluate model
-    mlp_predictions, mlp_probabilities, mlp_best_model = train_and_evaluate(x_train_mlp, y_train, x_test_mlp)
+# Here you should define the parameter grid for the MLP model
+mlp_param_grid = {
+    'hidden_layer_sizes': [(128, 64), (64, 32), (128,)],
+    'alpha': [0.0001, 0.001, 0.01],
+}
 
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, mlp_predictions, mlp_probabilities, 'MLP')
-    plot_roc_curve(y_test, mlp_probabilities, 'MLP')
-    plot_learning_curve(mlp_best_model, x_train_mlp, y_train, title="Learning Curve for MLP",
-                        filename='mlp_learning_curve.png')
+# Create a GridSearchCV or RandomizedSearchCV object
+mlp_search = GridSearchCV(mlp_model, mlp_param_grid, cv=cv, scoring='roc_auc', n_jobs=-1)
+
+# Train and evaluate model
+mlp_predictions, mlp_probabilities, mlp_best_model = train_and_evaluate(mlp_search, x_train_mlp, y_train, x_test_mlp)
+
+# Calculate metrics and plot
+calculate_and_print_metrics(y_test, mlp_predictions, mlp_probabilities, 'MLP')
+plot_roc_curve(y_test, mlp_probabilities, 'MLP')
+plot_learning_curve(mlp_best_model, x_train_mlp, y_train, title="Learning Curve for MLP",
+                    filename='mlp_learning_curve.png')
 
 #----------------------------------------------------------------------------------------------------------------------------------------#
