@@ -258,6 +258,31 @@ def main(args):
     plt.savefig('feature_importance_ab.png', bbox_inches='tight')
     plt.close()
 
+    # SHAP analysis
+
+    rf_explainer = shap.TreeExplainer(rf_best_model)
+    rf_shap_values = rf_explainer.shap_values(X_test)
+    
+    rf_class_index = 1
+    rf_class_specific_shap_values = rf_shap_values[rf_class_index]
+    
+    # Calculate mean absolute SHAP values across all samples for the chosen class
+    rf_mean_abs_shap_values = np.abs(rf_class_specific_shap_values).mean(axis=0)
+    
+    # Identify top 10 feature indices
+    rf_sorted_feature_indices = np.argsort(rf_mean_abs_shap_values)[::-1][:10]
+    
+    # Extract SHAP values for top 10 features
+    rf_top_shap_values = rf_class_specific_shap_values[:, rf_sorted_feature_indices]
+    
+    # Corresponding feature names for these top 10 features
+    rf_top_feature_names = df.columns[1:-1].to_numpy()[rf_sorted_feature_indices]
+    
+    # Generate a summary plot for the top 10 features for the selected class
+    shap.summary_plot(rf_top_shap_values, X_test[:, rf_sorted_feature_indices], feature_names=rf_top_feature_names.tolist())
+    plt.savefig('shap_summary_plot_top_10_class_' + str(rf_class_index) + '.png')
+    plt.close()
+
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
 
     # Define the AdaBoost model with default base estimator
@@ -345,4 +370,4 @@ if __name__ == '__main__':
     parser.add_argument('filename', type=str, help="Path to the dataset file.")
     args = parser.parse_args()
 
-    main(args.filename)
+    main(args)
