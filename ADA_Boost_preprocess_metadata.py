@@ -44,7 +44,7 @@ grid = {
 }
 
 # Define the evaluation procedure
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=1, random_state=25)
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)
 
 # Define the grid search procedure
 grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
