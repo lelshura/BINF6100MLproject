@@ -2,7 +2,7 @@
 Date: April 18th, 2024
 
 ## About the Project
-In this project, we aim to use classification machine learning models to identify and classify individuals with colorectal cancer based on bacterial realative abundances in their gut microbiome.
+In this project, we aim to use machine learning models to identify and classify individuals with colorectal cancer based on bacterial realative abundances in their gut microbiome.
 The classification models trained are Support Vector Machine (SVM), Logistic Regression, Random Forest, AdaBoost, and Multilayer Perceptron (MLP).
 
 ## Function Descriptions
