@@ -14,6 +14,13 @@ filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_a
 # Load the dataset; header is the first row
 df = pd.read_csv(filename, header=0)
 
+# Apply plot styling configurations
+plt.rcParams.update({'font.size': 12})  # Set global font size
+plt.rc('font', size=12)  # Apply font size to all text elements
+plt.rc('axes', titlesize=16)  # Apply font size to the axes title
+plt.rc('xtick', labelsize=12)  # Apply font size to the x-tick labels
+plt.rc('ytick', labelsize=12)  # Apply font size to the y-tick labels
+
 # Exclude 'Sample ID' and 'CRC' from the features, 'CRC' is the target variable
 X = df.drop(['Sample ID', 'CRC'], axis=1).values
 y = df['CRC'].astype(int).values  # Ensure the target is of integer type
@@ -32,6 +39,8 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None, n
     test_scores_std = np.std(test_scores, axis=1)
     fit_times_mean = np.mean(fit_times, axis=1)
     fit_times_std = np.std(fit_times, axis=1)
+    if ylim is not None:
+        axes[0].set_ylim(*ylim)
 
     # Plot learning curve
     axes[0].set_title('Learning Curves')
@@ -63,6 +72,7 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None, n
     axes[2].set_xlabel("Fit times")
     axes[2].set_ylabel("Score")
     axes[2].set_title("Performance of the model")
+    axes[2].set_ylim(*ylim)
 
     return plt
 
@@ -121,5 +131,5 @@ plt.show()
 # Configure the cross-validation strategy and plot learning curves
 cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
 fig, axes = plt.subplots(1, 3, figsize=(20, 5))
-plot_learning_curve(model, "MLP Classifier", X_train, y_train, axes=axes, cv=cv, n_jobs=-1)
+plot_learning_curve(model, "MLP Classifier", X_train, y_train, axes=axes, ylim=(0.5, 1.01), cv=cv, n_jobs=-1)
 plt.show()
