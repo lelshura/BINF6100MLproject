@@ -36,11 +36,11 @@ In the second part of our analysis, functions 2-6, as defined for Part A, are us
 ### Requirements
 Python 3 and pip must be installed on your system to use this script.
 This script also requires the following Python packages:
-NumPy
-Pandas
-Scikit-Learn
-Matplotlib
-Shap
+NumPy, 
+Pandas, 
+Scikit-Learn, 
+Matplotlib, 
+and SHAP.
 
 ### Installation
 Download and install Python from the official website (installing Python from this site will typically include pip). 
