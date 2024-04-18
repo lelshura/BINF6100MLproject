@@ -50,7 +50,10 @@ Install the required Python libraries using pip:
 pip install numpy pandas scikit-learn matplotlib shap
 
 ### Executing program
-How to run:   python3  master_script.py  data.csv
+**How to run Part A:**   python3  master_script.py  rynazal_filtered_abundance.csv
+**How to run Part B:**   python3  meta_script.py  rynazal_abundance_metadata.csv
+**How to run Part A and B on Linux and macOS:** python3  master_script.py  rynazal_filtered_abundance.csv & meta_script.py  rynazal_abundance_metadata.csv
+**How to run Part A and B on Windows:** start python  master_script.py  rynazal_filtered_abundance.csv & meta_script.py  rynazal_abundance_metadata.csv
 
 ## Authors
 Neha Patel:
