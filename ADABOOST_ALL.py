@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, G
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score, matthews_corrcoef, \
     roc_curve
+from sklearn.tree import DecisionTreeClassifier
 
 # Update matplotlib settings for plotting
 plt.rcParams.update({
@@ -23,14 +24,18 @@ filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_a
 df = pd.read_csv(filename, header=0)
 
 # Exclude 'Sample ID' and 'CRC' from the features, 'CRC' is the target variable
-X = df.drop(['Sample ID', 'CRC'], axis=1).values
+X = df.drop(['Sample ID', 'CRC'], axis=1)
 y = df['CRC'].values
 
 # Split into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
 
-# Define the AdaBoost model with default base estimator
-model = AdaBoostClassifier(algorithm='SAMME', random_state=25)
+# Convert DataFrame to NumPy array for model fitting
+X_train_values = X_train.values
+X_test_values = X_test.values
+
+# Define the AdaBoost model with a Decision Tree as base estimator
+model = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), algorithm='SAMME', random_state=25)
 
 # Define the grid of values to search
 grid = {
@@ -45,7 +50,7 @@ cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)
 grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
 
 # Execute the grid search
-grid_result = grid_search.fit(X_train, y_train)
+grid_result = grid_search.fit(X_train_values, y_train)
 
 # Summarize the best score and configuration
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
@@ -54,8 +59,8 @@ print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 best_model = grid_search.best_estimator_
 
 # Evaluate the model on the test set
-y_pred = best_model.predict(X_test)
-y_pred_proba = best_model.predict_proba(X_test)[:, 1]  # for ROC AUC
+y_pred = best_model.predict(X_test_values)
+y_pred_proba = best_model.predict_proba(X_test_values)[:, 1]  # for ROC AUC
 mcc = matthews_corrcoef(y_test, y_pred)
 accuracy = accuracy_score(y_test, y_pred)
 conf_mat = confusion_matrix(y_test, y_pred)
@@ -135,5 +140,30 @@ axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
 axes[2].set_xlabel("fit_times")
 axes[2].set_ylabel("Score")
 axes[2].set_title("Performance of the model")
+
+plt.show()
+
+# Feature Importance
+feature_importances = best_model.feature_importances_
+
+# Create a pandas series with feature importances and labels, then sort it
+importances = pd.Series(feature_importances, index=X.columns).sort_values(ascending=False)
+
+# Select the top 10 features
+top_importances = importances.head(10)
+
+# Create the plot with the specified aesthetics
+plt.figure(figsize=(10, 6))
+top_importances.plot(kind='barh', color='skyblue')
+
+# Invert y-axis to have the highest importance at the top
+plt.gca().invert_yaxis()
+
+plt.title('Top 10 Feature Importances in AdaBoost Model')
+plt.xlabel('Relative Importance')
+plt.ylabel('Features')
+
+# Tight layout to improve the spacing between subplots
+plt.tight_layout()
 
 plt.show()
