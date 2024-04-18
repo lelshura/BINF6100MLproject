@@ -129,7 +129,7 @@ plt.ylabel('Loss')
 plt.show()
 
 # Configure the cross-validation strategy and plot learning curves
-cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)
 fig, axes = plt.subplots(1, 3, figsize=(20, 5))
 plot_learning_curve(model, "MLP Classifier", X_train, y_train, axes=axes, ylim=(0.5, 1.01), cv=cv, n_jobs=-1)
 plt.show()
