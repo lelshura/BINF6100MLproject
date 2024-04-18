@@ -6,7 +6,7 @@ Date: April 18th, 2024
 ##Description
 
 Data Preprocessing: Splits the dataset into training and testing sets.
-Model Training: Trains SVM, Logistic Regression, Random Forest, and AdaBoost classifiers.
+Model Training: Trains SVM, Logistic Regression, Random Forest, AdaBoost classifiers, and MLP.
 Evaluation: Evaluates models based on  Confusion Matrix, F1 Score, Matthews Correlation Coefficient, ROC AUC, accuracy, precision, recall, and specificity.
 Plotting: Generates learning curves and ROC curves to visually assess model performance.
 
