@@ -12,7 +12,7 @@ In the second part of the project, an exploratory analysis is conducted by incor
 ## Function Descriptions
 ### Part A
 #### 1. *def load_data(filename)*
-#### **For Data Loading and Preprocessing:** Loads a dataset from a CSV file and splits the dataset into training and testing sets.
+**For Data Loading and Preprocessing:** Loads a dataset from a CSV file and splits the dataset into training and testing sets.
 
 #### 2. *def train_and_evaluate(model_search, X_train, y_train, X_test)*
 **For Model Training:** Trains a machine learning model using the parameters defined in 'model_search' and evaluates it on the test set.
