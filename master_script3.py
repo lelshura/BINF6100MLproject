@@ -43,7 +43,7 @@ def load_data(filename):
     print("X_test:\n", X_test, "\n")
     print("y_train:\n", y_train, "\n")
     print("y_test:\n", y_test, "\n")
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, df
 
 def train_and_evaluate(model_search, X_train, y_train, X_test):
     """ Train the model and evaluate it on the test set """
