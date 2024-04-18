@@ -44,7 +44,7 @@ grid = {
 }
 
 # Define the evaluation procedure
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=1, random_state=25)
 
 # Define the grid search procedure
 grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
@@ -82,6 +82,32 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC Curve')
 plt.legend(loc="lower right")
+plt.show()
+
+# Get feature names from the column transformer
+feature_names = numeric_features + \
+    list(preprocessor.named_transformers_['cat'].get_feature_names_out(categorical_features))
+
+# Evaluate the model on the test set
+y_pred = best_model.predict(X_test)
+y_pred_proba = best_model.predict_proba(X_test)[:, 1]  # for ROC AUC
+
+# Calculate feature importances and display the top 10
+feature_importances = best_model.feature_importances_
+importances_df = pd.DataFrame({
+    'feature': feature_names,
+    'importance': feature_importances
+})
+importances_df = importances_df.sort_values(by='importance', ascending=False)
+
+# Plotting the top 10 features
+plt.figure(figsize=(10, 6))
+importances_df[:10].plot(kind='barh', x='feature', y='importance', legend=False, color='skyblue')
+plt.gca().invert_yaxis()
+plt.title('Top 10 Feature Importances in AdaBoost Model')
+plt.xlabel('Relative Importance')
+plt.ylabel('Features')
+plt.tight_layout()
 plt.show()
 
 # Obtain the learning curve data
