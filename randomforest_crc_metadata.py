@@ -243,7 +243,7 @@ plt.close()
 
 # SHAP analysis
 
-explainer = shap.TreeExplainer(model)
+explainer = shap.TreeExplainer(best_model)
 shap_values = explainer.shap_values(X_test)
 
 class_index = 1  # or 0, depending on which class you are interested in
