@@ -7,22 +7,22 @@ The classification models trained are Support Vector Machine (SVM), Logistic Reg
 
 ## Functions Descriptions
 ### def load_data(filename)
-For Data Loading and Preprocessing: Loads a dataset from a CSV file and splits the dataset into training and testing sets.
+**For Data Loading and Preprocessing:** Loads a dataset from a CSV file and splits the dataset into training and testing sets.
 
 ### def train_and_evaluate(model_search, X_train, y_train, X_test)
-For Model Training: Trains a machine learning model using the parameters defined in 'model_search' and evaluates it on the test set.
+**For Model Training:** Trains a machine learning model using the parameters defined in 'model_search' and evaluates it on the test set.
 
 ### def plot_learning_curve(estimator, X, y, title="Learning Curves Logistic Regression", axes=None, ylim=None, cv=None, n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5), filename=None)
-For Plotting: Generates learning curves to visually assess model performance and understand how the model performance improves with the addition of more training data.
+**For Plotting:** Generates learning curves to visually assess model performance and understand how the model performance improves with the addition of more training data.
 
 ### def calculate_and_print_metrics(y_test, y_pred, y_probs, model_name)
-For Calculating Metrics for Evaluation: Calculate several performance metrics to evaluate models based on a Confusion Matrix, F1 Score, Matthews Correlation Coefficient, ROC AUC, accuracy, precision, recall, and specificity.
+**For Calculating Metrics for Evaluation:** Calculate several performance metrics to evaluate models based on a Confusion Matrix, F1 Score, Matthews Correlation Coefficient, ROC AUC, accuracy, precision, recall, and specificity.
 
 ### def plot_roc_curve(y_test, y_probs, model_name)
-For Plotting: Generates Receiver Operating Characteristic (ROC) curves to visually assess model performance at various thresholds.
+**For Plotting:** Generates Receiver Operating Characteristic (ROC) curves to visually assess model performance at various thresholds.
 
 ### def main(args)
-For Program Execution: Sets cross-validation and hyperparameter tuning and runs the previously defined functions on each model. 
+**For Program Execution:** Sets cross-validation and hyperparameter tuning and runs the previously defined functions on each model. 
 
 ## Getting Started
 ### Requirements
