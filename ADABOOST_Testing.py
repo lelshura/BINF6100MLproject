@@ -76,7 +76,7 @@ plt.plot(fpr, tpr, label='AdaBoost (area = %0.2f)' % roc_auc)
 plt.plot([0, 1], [0, 1], 'k--')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
+plt.title('ROC Curve for AdaBoost')
 plt.legend(loc="lower right")
 plt.show()
 

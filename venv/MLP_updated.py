@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import learning_curve, RepeatedStratifiedKFold
+from sklearn.model_selection import learning_curve, RepeatedStratifiedKFold, GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
@@ -43,7 +43,7 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None, n
         axes[0].set_ylim(*ylim)
 
     # Plot learning curve
-    axes[0].set_title('Learning Curves')
+    axes[0].set_title('Learning Curves - MLP')
     axes[0].grid()
     axes[0].fill_between(train_sizes, train_scores_mean - train_scores_std,
                          train_scores_mean + train_scores_std, alpha=0.1, color="r")
@@ -84,14 +84,26 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+
 # Define the MLP model
 model = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
                       random_state=25, max_iter=1000, alpha=0.0001,
                       solver='adam', verbose=10, n_iter_no_change=10,
                       early_stopping=True, validation_fraction=0.1)
 
+# Here you should define the parameter grid for the MLP model
+mlp_param_grid = {
+    'hidden_layer_sizes': [(128, 64), (64, 32), (128,)],
+    'alpha': [0.0001, 0.001, 0.01],
+}
+
+# Create a GridSearchCV or RandomizedSearchCV object
+mlp_search = GridSearchCV(model, mlp_param_grid, cv=cv, scoring='roc_auc', n_jobs=-1)
+
 # Fit the model
-model.fit(X_train, y_train)
+grid_result = model.fit(X_train, y_train)
+
 
 # Evaluate the model
 y_pred = model.predict(X_test)
@@ -116,7 +128,7 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic')
+plt.title('ROC Curve for MLP')
 plt.legend(loc="lower right")
 plt.show()
 
