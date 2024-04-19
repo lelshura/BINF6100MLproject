@@ -256,7 +256,7 @@ def main(args):
     class_index = 1  # or 0, depending on which class you are interested in
 
     # This selects the SHAP values for the chosen class across all features and samples
-    class_specific_shap_values = shap_values[:, :, class_index]
+    class_specific_shap_values = shap_values[class_index]
 
     # Calculate mean absolute SHAP values across all samples for the chosen class
     mean_abs_shap_values = np.abs(class_specific_shap_values).mean(axis=0)
