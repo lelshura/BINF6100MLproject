@@ -58,6 +58,8 @@ pip install numpy pandas scikit-learn matplotlib shap
 
 **How to run Part A and B on Windows:** start python  master_script.py  rynazal_filtered_abundance.csv & meta_script.py  rynazal_abundance_metadata.csv
 
+**NOTE:** Part A master_script.py has been adjusted for faster run time. The cross-validation variable used in the analysis was "cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)." The cross-validation variable used in this master_script is "cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=1, random_state=25)".
+
 ## Authors
 Neha Patel:
 npatel31@uoguelph.ca
