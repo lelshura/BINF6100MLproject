@@ -1,27 +1,31 @@
 # ========================================================================================= #
 # Trust Your Gut: Classifying Colorectal Cancer Diagnosis with Microbiome Genomic Profiling #
+# PART B: Incorporating Metadata                                                            #
 # ========================================================================================= #
 # Authors:   Neha Patel, Lubaina Kothari, Lina Elshurafa
 # Acknowledgements: Dr. Dan Tulpan
 # Date:     April 18th, 2024
 
-# How to run:   python3  master_script.py  data.csv
+# How to run:   python3  meta_script.py  data.csv
 # ========================================================================================= #
-
-from sklearn.model_selection import learning_curve, train_test_split, RandomizedSearchCV, GridSearchCV, RepeatedStratifiedKFold
-import argparse
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, GridSearchCV, learning_curve
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn import svm
-from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score, RepeatedStratifiedKFold
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, f1_score, matthews_corrcoef, precision_score, recall_score, roc_curve, roc_auc_score, auc, RocCurveDisplay
+from sklearn.model_selection import learning_curve
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.metrics import (confusion_matrix, f1_score, matthews_corrcoef,
-                             roc_auc_score, accuracy_score, precision_score,
-                             recall_score, roc_curve, auc, classification_report)
-from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn import svm
+import matplotlib.pyplot as plt
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.tree import DecisionTreeClassifier
+from pprint import pprint
+import shap
+import argparse
+from sklearn.pipeline import Pipeline
 
 # Set global Matplotlib style parameters
 plt.rcParams.update({'font.size': 12})
@@ -29,25 +33,9 @@ plt.rc('font', size=12)
 plt.rc('axes', titlesize=16)
 plt.rc('xtick', labelsize=12)
 plt.rc('ytick', labelsize=12)
-
 #-------------------------------------------------------------------------------------------------------------------------------------------------
 #                                         Define Functions
 #-------------------------------------------------------------------------------------------------------------------------------------------------
-def load_data(filename):
-    """ Load dataset from file """
-    df = pd.read_csv(filename, header=0)
-    data = df.values
-    X = data[:, 1:-1] # Sample ID and CRC removed
-    y = data[:, -1].astype(int)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
-
-    print("X_train, X_test size: ", X_train.shape, X_test.shape)
-    print("y_train, y_test size: ", y_train.shape, y_test.shape)
-    print("\nX_train:\n", X_train, "\n")
-    print("X_test:\n", X_test, "\n")
-    print("y_train:\n", y_train, "\n")
-    print("y_test:\n", y_test, "\n")
-    return X_train, X_test, y_train, y_test, df
 
 def train_and_evaluate(model_search, X_train, y_train, X_test):
     """ Train the model and evaluate it on the test set """
@@ -161,62 +149,63 @@ def plot_roc_curve(y_test, y_probs, model_name):
     plt.savefig(f'ROC_curve_{model_name}.png')
     plt.show()
 
+def get_feature_names_out(column_transformer):
+    """Get feature names from all transformers."""
+    new_feature_names = []
+
+    # Loop over all transformers in the Column Transformer
+    for name, estimator, features in column_transformer.transformers_:
+        if name == 'remainder':
+            # The remainder are those columns not specified in transformers; they are passed as is
+            new_feature_names.extend(column_transformer.feature_names_in_[features])
+        elif hasattr(estimator, 'get_feature_names_out'):
+            # If the estimator has 'get_feature_names_out', use it
+            names = estimator.get_feature_names_out(features)
+            new_feature_names.extend(names)
+        else:
+            # Otherwise, use the provided feature names directly
+            new_feature_names.extend(features)
+
+    return new_feature_names
+
 #----------------------------------------------------------------------------------------------------------------------------------------
 #                                         Main Program
 #----------------------------------------------------------------------------------------------------------------------------------------
+
+# Load the original dataset
+filename = 'rynazal_abundance_metadata.csv'
+df = pd.read_csv(filename, header=0)
+
+# Specify categorical and numeric features
+categorical_features = ['gender', 'country']
+numeric_features = df.drop(['Sample ID', 'CRC', 'gender', 'country'], axis=1).columns.tolist()
+
+# Create preprocessors for numeric and categorical data
+numeric_transformer = StandardScaler()
+categorical_transformer = OneHotEncoder(drop='first')
+
+# Create a column transformer to apply the transformations
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, numeric_features),
+        ('cat', categorical_transformer, categorical_features)
+    ],
+    remainder='passthrough'  # This will pass through any other columns not listed explicitly
+)
+
+# Apply transformations
+X_processed = preprocessor.fit_transform(df.drop(['Sample ID', 'CRC'], axis=1))
+y = df['CRC'].values
+
+# Split into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_processed, y, train_size=0.80, random_state=25, stratify=y)
+
+# Train and evaluate the model with cross validation
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=1, random_state=25)
+
+
 def main(args):
-    # Extract filename from args
-    filename = args.filename
-    # Load data and set cross-validation
-    X_train, X_test, y_train, y_test, df = load_data(filename)
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-
-    #-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
-    # Define the model
-    svm_model = svm.SVC(probability = True)
-
-    # Define the parameters to search
-    svm_param = {
-        'C': np.logspace(-4, 4, 20),  # Log-uniform distribution
-        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-        'gamma': np.logspace(-4, 4, 20),  # Applies to non-linear kernels
-        'degree': [2, 3, 4, 5]  # Applies to 'poly' kernel
-    }
-
-    # Create a RandomizedSearchCV object
-    svm_search = RandomizedSearchCV(svm_model, svm_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
-
-    # Train and evaluate model
-    svm_predictions, svm_probabilities, svm_best_model = train_and_evaluate(svm_search, X_train, y_train, X_test)
-
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM')
-    plot_roc_curve(y_test, svm_probabilities, 'SVM')
-    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='svm_learning_curve.png')
-
-    #-------------------------------------|Logistic Regression Classifier|---------------------------------------------------------------
-    # Define model
-    logreg_model = LogisticRegression(max_iter=100000)
-
-    # Define the parameters to search
-    logreg_param = [
-        {'C': np.logspace(-4, 4, 20), 'penalty': ['l1', 'l2'], 'solver': ['liblinear']},
-        {'C': np.logspace(-4, 4, 20), 'penalty': ['l2'], 'solver': ['lbfgs', 'sag', 'saga']},
-        {'C': np.logspace(-4, 4, 20), 'penalty': ['elasticnet'], 'solver': ['saga'], 'l1_ratio': np.linspace(0, 1, 10)},
-        {'solver': ['lbfgs', 'sag', 'saga'], 'penalty': [None]}
-    ]
-
-    # Create a RandomizedSearchCV object
-    logreg_search = RandomizedSearchCV(logreg_model, logreg_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
-
-    # Train and evaluate model
-    logreg_predictions, logreg_probabilities, logreg_best_model = train_and_evaluate(logreg_search, X_train, y_train, X_test)
-
-    # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, logreg_predictions, logreg_probabilities, 'Logistic Regression')
-    plot_roc_curve(y_test, logreg_probabilities, 'Logistic Regression')
-    plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='logreg_learning_curve.png')
-
+    """
     #-------------------------------------|Random Forest Classifier|---------------------------------------------------------------------
     # Define the model
     rf_model = RandomForestClassifier(random_state=25)
@@ -231,57 +220,61 @@ def main(args):
 
 
     # Create a RandomizedSearchCV object
-    rf_search = RandomizedSearchCV(rf_model, rf_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2)
+    rf_search = RandomizedSearchCV(rf_model, rf_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2, n_jobs=-1)
 
     # Train and evaluate model
     rf_predictions, rf_probabilities, rf_best_model = train_and_evaluate(rf_search, X_train, y_train, X_test)
 
     # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest')
-    plot_roc_curve(y_test, rf_probabilities, 'Random Forest')
-    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='rf_learning_curve.png')
+    calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest with Metadata')
+    plot_roc_curve(y_test, rf_probabilities, 'Random Forest with Metadata')
+    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest with Metadata", filename='rf_learning_curve_meta.png')
 
     # Plot Feature Importance
     rf_importance = rf_best_model.feature_importances_
-    rf_feature_importance = pd.Series(rf_importance, index=df.columns[1:-1])
-    rf_sorted_features = rf_feature_importance.sort_values(ascending=False)
+    new_feature_names = get_feature_names_out(preprocessor)
+    rf_feature_importances = pd.Series(rf_best_model.feature_importances_, index=new_feature_names)
+    rf_sorted_features = rf_feature_importances.sort_values(ascending=False)
     rf_top_ten_features = rf_sorted_features[:10]
-    
+
     # Sort the features in ascending order for display
     rf_sorted_features = rf_top_ten_features.sort_values(ascending=True)
     rf_sorted_features.plot(kind='barh', color='skyblue')
-    
+
     plt.title('Top 10 Feature Importance Using Mean Decrease Gini')
     plt.ylabel('Features')
     plt.xlabel('Mean Decrease Gini')
+    plt.xticks(rotation=45)  # Rotate x-ticks to prevent overlapping
     plt.tight_layout()
     plt.savefig('feature_importance_ab.png', bbox_inches='tight')
     plt.close()
 
     # SHAP analysis
+    explainer = shap.TreeExplainer(rf_best_model)
+    shap_values = explainer.shap_values(X_test)
 
-    rf_explainer = shap.TreeExplainer(rf_best_model)
-    rf_shap_values = rf_explainer.shap_values(X_test)
-    
-    rf_class_index = 1
-    rf_class_specific_shap_values = rf_shap_values[rf_class_index]
-    
+    class_index = 1  # or 0, depending on which class you are interested in
+
+    # This selects the SHAP values for the chosen class across all features and samples
+    class_specific_shap_values = shap_values[class_index]
+
     # Calculate mean absolute SHAP values across all samples for the chosen class
-    rf_mean_abs_shap_values = np.abs(rf_class_specific_shap_values).mean(axis=0)
-    
+    mean_abs_shap_values = np.abs(class_specific_shap_values).mean(axis=0)
+
     # Identify top 10 feature indices
-    rf_sorted_feature_indices = np.argsort(rf_mean_abs_shap_values)[::-1][:10]
-    
+    sorted_feature_indices = np.argsort(mean_abs_shap_values)[::-1][:10]
+
     # Extract SHAP values for top 10 features
-    rf_top_shap_values = rf_class_specific_shap_values[:, rf_sorted_feature_indices]
-    
+    top_shap_values = class_specific_shap_values[:, sorted_feature_indices]
+
     # Corresponding feature names for these top 10 features
-    rf_top_feature_names = df.columns[1:-1].to_numpy()[rf_sorted_feature_indices]
-    
+    top_feature_names = df.columns[1:-1].to_numpy()[sorted_feature_indices]
+
     # Generate a summary plot for the top 10 features for the selected class
-    shap.summary_plot(rf_top_shap_values, X_test[:, rf_sorted_feature_indices], feature_names=rf_top_feature_names.tolist())
-    plt.savefig('shap_summary_plot_top_10_class_' + str(rf_class_index) + '.png')
+    shap.summary_plot(top_shap_values, X_test[:, sorted_feature_indices], feature_names=top_feature_names.tolist())
+    plt.savefig('shap_summary_plot_top_10_class_' + str(class_index) + '.png')
     plt.close()
+    """
 
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
 
@@ -301,70 +294,58 @@ def main(args):
     adab_predictions, adab_probabilities, adab_best_model = train_and_evaluate(adab_grid, X_train, y_train, X_test)
 
     # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost')
-    plot_roc_curve(y_test, adab_probabilities, 'AdaBoost')
-    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='adaboost_learning_curve.png')
+    calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost with Metadata')
+    plot_roc_curve(y_test, adab_probabilities, 'AdaBoost with Metadata')
+    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost with Metadata", filename='adaboost_learning_curve_meta.png')
 
-    # Feature Importance
-    feature_importances = adab_best_model.feature_importances_
-  
-    # Create a pandas series with feature importances and labels, then sort it
-    importances = pd.Series(feature_importances, index=df.columns[1:-1])
-    sorted_features = importances.sort_values(ascending=False)
-  
-    # Select the top 10 features
-    top_importances = sorted_features[:10]
+    # Get feature names from the column transformer
+    adab_feature_names = numeric_features + \
+        list(preprocessor.named_transformers_['cat'].get_feature_names_out(categorical_features))
 
-    # Create the plot with the specified aesthetics
+    # Calculate feature importances and display the top 10
+    adab_feature_importances = adab_best_model.feature_importances_
+    adab_importances_df = pd.DataFrame({
+        'feature': adab_feature_names,
+        'importance': adab_feature_importances
+    })
+    adab_importances_df = adab_importances_df.sort_values(by='importance', ascending=False)
+
+    # Plotting the top 10 features
     plt.figure(figsize=(10, 6))
-    top_importances.plot(kind='barh', color='skyblue')
-
-    # Invert y-axis to have the highest importance at the top
+    adab_importances_df[:10].plot(kind='barh', x='feature', y='importance', legend=False, color='skyblue')
     plt.gca().invert_yaxis()
-
     plt.title('Top 10 Feature Importances in AdaBoost Model')
     plt.xlabel('Relative Importance')
     plt.ylabel('Features')
-
-    # Tight layout to improve the spacing between subplots
     plt.tight_layout()
-
     plt.show()
-    
-    # -------------------------------------|MLP Classifier|-------------------------------------------------------------------------------
-    # Standardize the features
-    scaler = StandardScaler()
-    x_train_mlp = scaler.fit_transform(X_train)
-    x_test_mlp = scaler.transform(X_test)
 
+    #-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
     # Define the model
-    mlp_model = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
-                              random_state=25, max_iter=1000, alpha=0.0001,
-                              solver='adam', verbose=10, n_iter_no_change=10,
-                              early_stopping=True, validation_fraction=0.1)
+    svm_model = svm.SVC(probability = True)
 
-    # Here you should define the parameter grid for the MLP model
-    mlp_param_grid = {
-        'hidden_layer_sizes': [(128, 64), (64, 32), (128,)],
-        'alpha': [0.0001, 0.001, 0.01],
+    # Define the parameters to search
+    svm_param = {
+        'C': np.logspace(-4, 4, 20),  # Log-uniform distribution
+        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+        'gamma': np.logspace(-4, 4, 20),  # Applies to non-linear kernels
+        'degree': [2, 3, 4, 5]  # Applies to 'poly' kernel
     }
 
-    # Create a GridSearchCV or RandomizedSearchCV object
-    mlp_search = GridSearchCV(mlp_model, mlp_param_grid, cv=cv, scoring='roc_auc', n_jobs=-1)
+    # Create a RandomizedSearchCV object
+    svm_search = RandomizedSearchCV(svm_model, svm_param, n_iter=100, cv=cv, scoring='roc_auc', random_state=25, verbose=2, n_jobs=-1)
 
     # Train and evaluate model
-    mlp_predictions, mlp_probabilities, mlp_best_model = train_and_evaluate(mlp_search, x_train_mlp, y_train,
-                                                                            x_test_mlp)
+    svm_predictions, svm_probabilities, svm_best_model = train_and_evaluate(svm_search, X_train, y_train, X_test)
 
     # Calculate metrics and plot
-    calculate_and_print_metrics(y_test, mlp_predictions, mlp_probabilities, 'MLP')
-    plot_roc_curve(y_test, mlp_probabilities, 'MLP')
-    plot_learning_curve(mlp_best_model, x_train_mlp, y_train, title="Learning Curve for MLP",
-                        filename='mlp_learning_curve.png')
+    calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM with Metadata')
+    plot_roc_curve(y_test, svm_probabilities, 'SVM with Metadata')
+    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM with Metadata", filename='svm_learning_curve_meta.png')
 
-    # ----------------------------------------------------------------------------------------------------------------------------------------
 
-#----------------------------------------------------------------------------------------------------------------------------------------
+#========================================================================================================================================#
+#For execution
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run a machine learning model on provided dataset.")
     parser.add_argument('filename', type=str, help="Path to the dataset file.")
