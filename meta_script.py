@@ -205,7 +205,7 @@ cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=1, random_state=25)
 
 
 def main(args):
-    """
+    
     #-------------------------------------|Random Forest Classifier|---------------------------------------------------------------------
     # Define the model
     rf_model = RandomForestClassifier(random_state=25)
@@ -274,7 +274,6 @@ def main(args):
     shap.summary_plot(top_shap_values, X_test[:, sorted_feature_indices], feature_names=top_feature_names.tolist())
     plt.savefig('shap_summary_plot_top_10_class_' + str(class_index) + '.png')
     plt.close()
-    """
 
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
 
