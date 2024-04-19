@@ -246,7 +246,7 @@ def main(args):
     plt.xlabel('Mean Decrease Gini')
     plt.xticks(rotation=45)  # Rotate x-ticks to prevent overlapping
     plt.tight_layout()
-    plt.savefig('feature_importance_ab.png', bbox_inches='tight')
+    plt.savefig('feature_importance_rf.png', bbox_inches='tight')
     plt.close()
 
     # SHAP analysis
@@ -317,7 +317,8 @@ def main(args):
     plt.xlabel('Relative Importance')
     plt.ylabel('Features')
     plt.tight_layout()
-    plt.show()
+    plt.savefig('feature_importance_ada.png', bbox_inches='tight')
+    plt.close()
 
     #-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
     # Define the model
