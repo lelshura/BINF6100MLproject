@@ -2,12 +2,15 @@
 Date: April 18th, 2024
 
 ## About the Project
+
 ### Part A:
-In this project, we aim to use machine learning models to identify and classify individuals with colorectal cancer based on bacterial relative abundances in their gut microbiome.
+In this project, we aim to use machine learning models to identify and classify individuals with colorectal cancer based on bacterial relative abundances in their gut microbiome. We also include a script "rynazal_filter_abundance_prevalence.py" that describes filtering steps to produce a processed dataset.
 The classification models trained are Support Vector Machine (SVM), Logistic Regression, Random Forest, AdaBoost, and Multilayer Perceptron (MLP).
 
 ### Part B:
 In the second part of the project, an exploratory analysis is conducted by incorporating patient metadata features, including country, age, sex, and BMI, to analyze the effects of the additional features on model performance. The top-performing classification models from Part A are trained, Random Forest, AdaBoost, and SVM.
+We also include a script "rynazal_metadata.py" to produce the dataset that includes metadata.
+
 
 ## Function Descriptions
 ### Part A
