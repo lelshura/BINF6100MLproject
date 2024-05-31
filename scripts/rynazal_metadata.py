@@ -2,15 +2,15 @@ import pandas as pd
 
 # Create a list of metadata file names
 metadata_file_paths = [
-    'VogtmannE_2016_metadata.tsv',
-    'WirbelJ_2018_metadata.tsv',
-    'YachidaS_2019_metadata.tsv',
-    'YuJ_2015_metadata.tsv',
-    'ZellerG_2014_metadata.tsv'
+    '../raw_data/VogtmannE_2016_metadata.tsv',
+    '../raw_data/WirbelJ_2018_metadata.tsv',
+    '../raw_data/YachidaS_2019_metadata.tsv',
+    '../raw_data/YuJ_2015_metadata.tsv',
+    '../raw_data/ZellerG_2014_metadata.tsv'
 ]
 
 # Load the filtered bacterial abundance dataset
-df_abundance = pd.read_csv('rynazal_filtered_abundance.csv', header=0)
+df_abundance = pd.read_csv('../filtered_data/rynazal_filtered_abundance.csv', header=0)
 
 # Initialize a list to hold dataframes containing relevant columns for each metadata file
 metadata_frames = []
@@ -61,4 +61,4 @@ cleaned_merged_dataset = merged_dataset.dropna()
 print(df_abundance.shape)
 print(cleaned_merged_dataset.shape)
 
-cleaned_merged_dataset.to_csv("rynazal_abundance_metadata.csv", index = False)
+cleaned_merged_dataset.to_csv("../filtered_data/rynazal_abundance_metadata.csv", index = False)

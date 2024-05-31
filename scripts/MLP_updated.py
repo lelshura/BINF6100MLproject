@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import matplotlib.pyplot as plt
 
 # Define the location of the dataset
-filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_abundance.csv'
+filename = '../filtered_data/rynazal_filtered_abundance.csv'
 
 # Load the dataset; header is the first row
 df = pd.read_csv(filename, header=0)

@@ -44,7 +44,7 @@ def ab_filter(data, abundance_threshold=1e-15, prevalence_threshold=0.9):
     return filtered_data
 
 # Read in file containing abundance values
-df = pd.read_csv("rynazal_data.csv", header=0)
+df = pd.read_csv("../raw_data/rynazal_data.csv", header=0)
 
 # Remove study name column
 df.drop(df.columns[-2], axis=1, inplace=True)
@@ -65,18 +65,7 @@ Use default values of function to filter dataset
 filtered_df = ab_filter(df)
 
 # Write dataframe to a csv file
-filtered_df.to_csv("rynazal_filtered_abundance.csv", index = False)
+filtered_df.to_csv("../filtered_data/rynazal_filtered_abundance.csv", index = False)
 
 print("Original dataframe size:", df.shape[0], "samples,", df.shape[1], "taxa.")
 print("Filtered dataframe size:", filtered_df.shape[0],"samples,", filtered_df.shape[1], "taxa.")
-
-'''
-Use values from rynazal tutorial to filter dataset
-'''
-
-# Apply filter function with adjusted thresholds to dataframe
-filtered_df_new = ab_filter(df, abundance_threshold=1e-7, prevalence_threshold=0.95)
-
-# Write dataframe to a csv file
-filtered_df_new.to_csv("rynazal_filtered_abundance_NEW.csv", index = False)
-print("New filtered dataframe size:", filtered_df_new.shape[0],"samples,", filtered_df_new.shape[1], "taxa.")

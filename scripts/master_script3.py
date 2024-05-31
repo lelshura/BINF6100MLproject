@@ -159,7 +159,7 @@ def plot_roc_curve(y_test, y_probs, model_name):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right")
-    plt.savefig(f'ROC_curve_{model_name}.png')
+    plt.savefig(f'../figures/ROC_curve_{model_name}.png')
     plt.show()
 
 #----------------------------------------------------------------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM')
     plot_roc_curve(y_test, svm_probabilities, 'SVM')
-    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='svm_learning_curve.png')
+    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='../figures/svm_learning_curve.png')
 
     #-------------------------------------|Logistic Regression Classifier|---------------------------------------------------------------
     # Define model
@@ -216,7 +216,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, logreg_predictions, logreg_probabilities, 'Logistic Regression')
     plot_roc_curve(y_test, logreg_probabilities, 'Logistic Regression')
-    plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='logreg_learning_curve.png')
+    plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='../figures/logreg_learning_curve.png')
 
     #-------------------------------------|Random Forest Classifier|---------------------------------------------------------------------
     # Define the model
@@ -240,7 +240,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest')
     plot_roc_curve(y_test, rf_probabilities, 'Random Forest')
-    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='rf_learning_curve.png')
+    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='../figures/rf_learning_curve.png')
 
     # Plot Feature Importance
     rf_importance = rf_best_model.feature_importances_
@@ -256,7 +256,7 @@ def main(args):
     plt.ylabel('Features')
     plt.xlabel('Mean Decrease Gini')
     plt.tight_layout()
-    plt.savefig('feature_importance_ab.png', bbox_inches='tight')
+    plt.savefig('../figures/feature_importance_ab.png', bbox_inches='tight')
     plt.close()
 
     # SHAP analysis
@@ -281,7 +281,7 @@ def main(args):
     
     # Generate a summary plot for the top 10 features for the selected class
     shap.summary_plot(rf_top_shap_values, X_test[:, rf_sorted_feature_indices], feature_names=rf_top_feature_names.tolist())
-    plt.savefig('shap_summary_plot_top_10_class_' + str(rf_class_index) + '.png')
+    plt.savefig('../figures/shap_summary_plot_top_10_class_' + str(rf_class_index) + '.png')
     plt.close()
 
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
@@ -304,7 +304,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost')
     plot_roc_curve(y_test, adab_probabilities, 'AdaBoost')
-    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='adaboost_learning_curve.png')
+    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='../figures/adaboost_learning_curve.png')
 
     # Feature Importance
     feature_importances = adab_best_model.feature_importances_
@@ -361,7 +361,7 @@ def main(args):
     calculate_and_print_metrics(y_test, mlp_predictions, mlp_probabilities, 'MLP')
     plot_roc_curve(y_test, mlp_probabilities, 'MLP')
     plot_learning_curve(mlp_best_model, x_train_mlp, y_train, title="Learning Curve for MLP",
-                        filename='mlp_learning_curve.png')
+                        filename='../figures/mlp_learning_curve.png')
 
     # ----------------------------------------------------------------------------------------------------------------------------------------
 

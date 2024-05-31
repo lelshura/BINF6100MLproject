@@ -145,7 +145,7 @@ def plot_roc_curve(y_test, y_probs, model_name):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right")
-    plt.savefig(f'ROC_curve_{model_name}.png')
+    plt.savefig(f'../figures/ROC_curve_{model_name}.png')
     plt.show()
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ svm_predictions, svm_probabilities, svm_best_model = train_and_evaluate(svm_sear
 calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM')
 plot_roc_curve(y_test, svm_probabilities, 'SVM')
 plot_model_learning_curve(svm_best_model, X_train, y_train, 'SVM')
-plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='svm_learning_curve.png')
+plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM", filename='../figures/svm_learning_curve.png')
 
 #-------------------------------------|Logistic Regression Classifier|--------------------------------------------------------------------
 # Define model
@@ -200,7 +200,7 @@ logreg_predictions, logreg_probabilities, logreg_best_model = train_and_evaluate
 # Calculate metrics and plot
 calculate_and_print_metrics(y_test, logreg_predictions, logreg_probabilities, 'Logistic Regression')
 plot_roc_curve(y_test, logreg_probabilities, 'Logistic Regression')
-plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='logreg_learning_curve.png')
+plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for Logistic Regression", filename='../figures/logreg_learning_curve.png')
 
 #-------------------------------------|Random Forest Classifier|--------------------------------------------------------------------------
 # Define the model
@@ -224,7 +224,7 @@ rf_predictions, rf_probabilities, rf_best_model = train_and_evaluate(rf_search, 
 # Calculate metrics and plot
 calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest')
 plot_roc_curve(y_test, rf_probabilities, 'Random Forest')
-plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='rf_learning_curve.png')
+plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest", filename='../figures/rf_learning_curve.png')
 
 #-------------------------------------|AdaBoost Classifier|-------------------------------------------------------------------------------
 
@@ -246,7 +246,7 @@ adab_predictions, adab_probabilities, adab_best_model = train_and_evaluate(adab_
 # Calculate metrics and plot
 calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost')
 plot_roc_curve(y_test, adab_probabilities, 'AdaBoost')
-plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='adaboost_learning_curve.png')
+plot_learning_curve(logreg_best_model, X_train, y_train, title="Learning Curve for AdaBoost", filename='../figures/adaboost_learning_curve.png')
 
 #-------------------------------------|MLP Classifier|------------------------------------------------------------------------------------
 

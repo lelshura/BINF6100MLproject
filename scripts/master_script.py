@@ -102,12 +102,12 @@ def plot_roc_curve(y_test, y_probs, model_name):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right")
-    plt.savefig(f'ROC_curve_{model_name}.png')
+    plt.savefig(f'../figures/ROC_curve_{model_name}.png')
     plt.show()
 
 def plot_model_learning_curve(model, X_train, y_train, title):
     plot_learning_curve(model, title, X_train, y_train, n_jobs=-1, ylim=(0.5, 1.01))
-    plt.savefig(f'Learning_curves_{title}.png')
+    plt.savefig(f'../figures/Learning_curves_{title}.png')
     plt.show()
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ def plot_model_learning_curve(model, X_train, y_train, title):
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
 # Define the location of the dataset
 # In practice use argparse to read the file as input parameter
-filename='rynazal_filtered_abundance.csv'
+filename='../filtered_data/rynazal_filtered_abundance.csv'
 
 # Load the dataset; header is first row
 df = pd.read_csv(filename, header=0)
