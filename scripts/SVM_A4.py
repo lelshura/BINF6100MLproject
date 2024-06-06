@@ -67,7 +67,7 @@ def plot_learning_curve(estimator, X, y, title="Learning Curves SVM", axes=None,
 #Main Program ----
 # Define the location of the dataset
 # In practice use argparse to read the file as input parameter
-filename='rynazal_filtered_abundance.csv'
+filename='../filtered_data/rynazal_filtered_abundance.csv'
 
 # Load the dataset; header is first row
 df = pd.read_csv(filename, header=0)
@@ -146,10 +146,10 @@ plt.title('ROC Curve')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.legend(loc="lower right")
-plt.savefig('ROC_curve.png')
+plt.savefig('../figures/ROC_curve.png')
 plt.show()
 
 # Plot learning curves
 plot_learning_curve(model, X_train, y_train, n_jobs=-1, ylim=(0.5, 1.01))
-plt.savefig('Learning_curves.png')
+plt.savefig('../figures/Learning_curves.png')
 plt.show()

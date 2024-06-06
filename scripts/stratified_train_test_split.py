@@ -5,7 +5,7 @@ import pandas as pd
 
 # Define the location of the dataset
 # In practice use argparse to read the file as input parameter
-filename='rynazal_filtered_abundance.csv'
+filename='../filtered_data/rynazal_filtered_abundance.csv'
 
 # Load the dataset; header is first row
 df = pd.read_csv(filename, header=0)

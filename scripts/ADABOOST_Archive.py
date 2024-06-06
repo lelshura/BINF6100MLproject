@@ -18,17 +18,21 @@ plt.rcParams.update({
 })
 
 # Define the location of the dataset
-filename = '/Users/lubainakothari/Documents/BINF6100MLproject/rynazal_filtered_abundance.csv'
+filename = '../filtered_data/rynazal_filtered_abundance.csv'
 
 # Load the dataset; header is the first row
 df = pd.read_csv(filename, header=0)
 
 # Exclude 'Sample ID' and 'CRC' from the features, 'CRC' is the target variable
-X = df.drop(['Sample ID', 'CRC'], axis=1).values
+X = df.drop(['Sample ID', 'CRC'], axis=1)
 y = df['CRC'].values
 
 # Split into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=25, stratify=y)
+
+# Convert DataFrame to NumPy array for model fitting
+X_train_values = X_train.values
+X_test_values = X_test.values
 
 # Define the AdaBoost model with a Decision Tree as base estimator
 model = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), algorithm='SAMME', random_state=25)
@@ -46,7 +50,7 @@ cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=25)
 grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
 
 # Execute the grid search
-grid_result = grid_search.fit(X_train, y_train)
+grid_result = grid_search.fit(X_train_values, y_train)
 
 # Summarize the best score and configuration
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
@@ -55,8 +59,8 @@ print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 best_model = grid_search.best_estimator_
 
 # Evaluate the model on the test set
-y_pred = best_model.predict(X_test)
-y_pred_proba = best_model.predict_proba(X_test)[:, 1]  # for ROC AUC
+y_pred = best_model.predict(X_test_values)
+y_pred_proba = best_model.predict_proba(X_test_values)[:, 1]  # for ROC AUC
 mcc = matthews_corrcoef(y_test, y_pred)
 accuracy = accuracy_score(y_test, y_pred)
 conf_mat = confusion_matrix(y_test, y_pred)
@@ -76,7 +80,7 @@ plt.plot(fpr, tpr, label='AdaBoost (area = %0.2f)' % roc_auc)
 plt.plot([0, 1], [0, 1], 'k--')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curve for AdaBoost')
+plt.title('ROC Curve')
 plt.legend(loc="lower right")
 plt.show()
 
@@ -141,11 +145,12 @@ plt.show()
 
 # Feature Importance
 feature_importances = best_model.feature_importances_
+
 # Create a pandas series with feature importances and labels, then sort it
-importances = pd.Series(feature_importances, index=df.columns[1:-1])
-sorted_features = importances.sort_values(ascending=False)
+importances = pd.Series(feature_importances, index=X.columns).sort_values(ascending=False)
+
 # Select the top 10 features
-top_importances = sorted_features[:10]
+top_importances = importances.head(10)
 
 # Create the plot with the specified aesthetics
 plt.figure(figsize=(10, 6))

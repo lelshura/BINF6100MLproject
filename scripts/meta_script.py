@@ -146,7 +146,7 @@ def plot_roc_curve(y_test, y_probs, model_name):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right")
-    plt.savefig(f'ROC_curve_{model_name}.png')
+    plt.savefig(f'../figures/ROC_curve_{model_name}.png')
     plt.show()
 
 def get_feature_names_out(column_transformer):
@@ -173,7 +173,7 @@ def get_feature_names_out(column_transformer):
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 # Load the original dataset
-filename = 'rynazal_abundance_metadata.csv'
+filename = '../filtered_data/rynazal_abundance_metadata.csv'
 df = pd.read_csv(filename, header=0)
 
 # Specify categorical and numeric features
@@ -228,7 +228,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, rf_predictions, rf_probabilities, 'Random Forest with Metadata')
     plot_roc_curve(y_test, rf_probabilities, 'Random Forest with Metadata')
-    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest with Metadata", filename='rf_learning_curve_meta.png')
+    plot_learning_curve(rf_best_model, X_train, y_train, title="Learning Curve for Random Forest with Metadata", filename='../figures/rf_learning_curve_meta.png')
 
     # Plot Feature Importance
     rf_importance = rf_best_model.feature_importances_
@@ -246,7 +246,7 @@ def main(args):
     plt.xlabel('Mean Decrease Gini')
     plt.xticks(rotation=45)  # Rotate x-ticks to prevent overlapping
     plt.tight_layout()
-    plt.savefig('feature_importance_rf.png', bbox_inches='tight')
+    plt.savefig('../figures/feature_importance_rf.png', bbox_inches='tight')
     plt.close()
 
     # SHAP analysis
@@ -272,7 +272,7 @@ def main(args):
 
     # Generate a summary plot for the top 10 features for the selected class
     shap.summary_plot(top_shap_values, X_test[:, sorted_feature_indices], feature_names=top_feature_names.tolist())
-    plt.savefig('shap_summary_plot_top_10_class_' + str(class_index) + '.png')
+    plt.savefig('../figures/shap_summary_plot_top_10_class_' + str(class_index) + '.png')
     plt.close()
 
     #-------------------------------------|AdaBoost Classifier|--------------------------------------------------------------------------
@@ -295,7 +295,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, adab_predictions, adab_probabilities, 'AdaBoost with Metadata')
     plot_roc_curve(y_test, adab_probabilities, 'AdaBoost with Metadata')
-    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost with Metadata", filename='adaboost_learning_curve_meta.png')
+    plot_learning_curve(adab_best_model, X_train, y_train, title="Learning Curve for AdaBoost with Metadata", filename='../figures/adaboost_learning_curve_meta.png')
 
     # Get feature names from the column transformer
     adab_feature_names = numeric_features + \
@@ -317,7 +317,7 @@ def main(args):
     plt.xlabel('Relative Importance')
     plt.ylabel('Features')
     plt.tight_layout()
-    plt.savefig('feature_importance_ada.png', bbox_inches='tight')
+    plt.savefig('../figures/feature_importance_ada.png', bbox_inches='tight')
     plt.close()
 
     #-------------------------------------|SVM Classifier|-------------------------------------------------------------------------------
@@ -341,7 +341,7 @@ def main(args):
     # Calculate metrics and plot
     calculate_and_print_metrics(y_test, svm_predictions, svm_probabilities, 'SVM with Metadata')
     plot_roc_curve(y_test, svm_probabilities, 'SVM with Metadata')
-    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM with Metadata", filename='svm_learning_curve_meta.png')
+    plot_learning_curve(svm_best_model, X_train, y_train, title="Learning Curve for SVM with Metadata", filename='../figures/svm_learning_curve_meta.png')
 
 
 #========================================================================================================================================#
